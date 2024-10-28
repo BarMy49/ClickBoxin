@@ -1,0 +1,2 @@
+Wiadomość dla przyszłych nas lmao
+WRZUĆ FOLDER ASSETS DO bin/Debug/net8.0/
