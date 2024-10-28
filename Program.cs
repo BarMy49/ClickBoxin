@@ -17,7 +17,7 @@ class Program
         int score = 0;
 
         var image = new CanvasImage("assets/hum.png");
-        image.MaxWidth(15);
+        image.MaxWidth(100);
         var music = new SoundPlayer("assets/musci.wav");
         music.PlayLooping();
 
@@ -142,7 +142,7 @@ class Program
 
         void OnBonusTimerElapsed(Object source, ElapsedEventArgs e)
         {
-            score += 5; // Increment score by farm1 every 5 seconds
+            score += 5; // Increment score by 5 every 5 seconds
             UpdateTable();
         }
 

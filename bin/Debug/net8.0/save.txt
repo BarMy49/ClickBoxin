@@ -1,0 +1,3 @@
+Score: 51
+Dmg: 3
+Farm1: True
