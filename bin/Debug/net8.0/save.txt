@@ -1,3 +1,3 @@
-Score: 51
+Score: 147
 Dmg: 3
-Farm1: True
+Farm1: 4
