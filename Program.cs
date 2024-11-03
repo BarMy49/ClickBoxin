@@ -11,16 +11,16 @@ namespace ClickBoxin
 {
     class Game
     {
-        //Game Logic Variables
         static public bool esc = true;
-        static public bool selected = true;
+        static public bool selected = false;
         static public string data = "";
-        
-        //Gmae Variables
-        static public int score = 0;
         static public int time = 0;
+
+        static public int score = 0;
+        static public int stage = 1;
         static public int dmg = 1;
-        static public int farm1 = 0;
+        static public int farm1 = 1;
+        static public int farm2 = 1;
 
         static public void UpgradeLogic(int variable)
         {
@@ -31,14 +31,14 @@ namespace ClickBoxin
                     AnsiConsole.MarkupLine($"This will cost {(dmg * 100) * dmg} score!");
                     break;
                 case 2:
-                    AnsiConsole.MarkupLine($"This will cost 1000 score!");
+                    AnsiConsole.MarkupLine($"This will cost {1000 * farm1} score!");
                     break;
                 case 3:
-                    AnsiConsole.MarkupLine($"This will cost 10 score!");
+                    AnsiConsole.MarkupLine($"This will cost {(1000 * (farm2))/2} score!");
                     break;
             }
             AnsiConsole.MarkupLine("[green]Press /spacebar/ to confirm[/] or [red]any other key to cancel[/]");
-            
+
             var key = Console.ReadKey(false).Key;
             if (key == ConsoleKey.Spacebar)
             {
@@ -55,12 +55,11 @@ namespace ClickBoxin
                             AnsiConsole.MarkupLine("[red]Not enough score![/]");
                             Console.ReadKey();
                         }
-
                         break;
                     case 2:
-                        if (score >= 1000)
+                        if (score >= 1000 * farm1)
                         {
-                            score -= 1000;
+                            score -= 1000 * farm1;
                             farm1 += 2;
                         }
                         else
@@ -68,50 +67,64 @@ namespace ClickBoxin
                             AnsiConsole.MarkupLine("[red]Not enough score![/]");
                             Console.ReadKey();
                         }
-
                         break;
                     case 3:
-                        if (score >= 10)
+                        if (score >= 1000 * ((1000 * (farm2))/2))
                         {
-                            score -= 10;
+                            score -= 1000 * ((1000 * (farm2))/2);
+                            farm2 += 10;
                         }
-
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[red]Not enough score![/]");
+                            Console.ReadKey();
+                        }
                         break;
                 }
             }
-            else
-            {
-                AnsiConsole.MarkupLine("[red]Not enough score![/]");
-                Console.ReadKey();
-            }
-            
         }
 
         static public void StartTimer()
         {
-            var bonusTimer = new Timer(1000); // 1 seconds
-            bonusTimer.Elapsed += OnBonusTimerElapsed;
+            var bonusTimer = new Timer(1000); // 1 second
+            bonusTimer.Elapsed += OnTimerElapsed;
             bonusTimer.AutoReset = true;
             bonusTimer.Enabled = true;
         }
 
-        static public void OnBonusTimerElapsed(Object source, ElapsedEventArgs e)
+        static public void OnTimerElapsed(Object source, ElapsedEventArgs e)
         {
-            if (time == 60) time = 0;
             time += 1; // Keep track of passed seconds one by one
+            if (selected == false)
+            {
+                Window.UpdateTable();
+                Window.UpdateStats();
+                AnsiConsole.Clear();
+                AnsiConsole.Write(Window.GameWin);
+            }
             if (time % 10 == 0)
             {
                 score += farm1;
-                
             }
+
+            if (time % 60 == 0)
+            {
+                score += farm2;
+            }
+
+            if (time == 120) time = 0;
         }
-        
+
         static public void SaveGame()
         {
-            data = "Score: " + score.ToString() + "\nDmg: " + dmg.ToString() + "\nFarm1: " + farm1.ToString();
+            data = "Score: " + score.ToString()
+                             + "\nStage: " + stage.ToString()
+                             + "\nDmg: " + dmg.ToString()
+                             + "\nFarm1: " + farm1.ToString()
+                             + "\nFarm2: " + farm2.ToString();
             File.WriteAllText("save.txt", data);
         }
-        
+
         static public void LoadGame()
         {
             if (File.Exists("save.txt"))
@@ -119,48 +132,77 @@ namespace ClickBoxin
                 Game.data = File.ReadAllText("save.txt");
                 string[] data = Game.data.Split("\n");
                 Game.score = int.Parse(data[0].Split(":")[1]);
-                Game.dmg = int.Parse(data[1].Split(":")[1]);
-                Game.farm1 = int.Parse(data[2].Split(":")[1]);
+                Game.stage = int.Parse(data[1].Split(":")[1]);
+                Game.dmg = int.Parse(data[2].Split(":")[1]);
+                Game.farm1 = int.Parse(data[3].Split(":")[1]);
+                Game.farm2 = int.Parse(data[4].Split(":")[1]);
             }
         }
     }
-    
     class Window
     {
-        //Game Assets Objects
         static public CanvasImage image;
         static public SoundPlayer music;
         static public Table GameWin;
 
         static public string stats = "";
-        
-        //Loading Progress Bar
-        static public string p0 = "□□□□□□□□□□ 0%";
-        static public string p1 = "■□□□□□□□□□ 10%";
-        static public string p2 = "■■□□□□□□□□ 20%";
-        static public string p3 = "■■■□□□□□□□ 30%";
-        static public string p4 = "■■■■□□□□□□ 40%";
-        static public string p5 = "■■■■■□□□□□ 50%";
-        static public string p6 = "■■■■■■□□□□ 60%";
-        static public string p7 = "■■■■■■■□□□ 70%";
-        static public string p8 = "■■■■■■■■□□ 80%";
-        static public string p9 = "■■■■■■■■■□ 90%";
-        
+
+        static public string p0 = "□□□□□□□□□□";
+        static public string p1 = "■□□□□□□□□□ ";
+        static public string p2 = "■■□□□□□□□□ ";
+        static public string p3 = "■■■□□□□□□□ ";
+        static public string p4 = "■■■■□□□□□□ ";
+        static public string p5 = "■■■■■□□□□□ ";
+        static public string p6 = "■■■■■■□□□□ ";
+        static public string p7 = "■■■■■■■□□□ ";
+        static public string p8 = "■■■■■■■■□□ ";
+        static public string p9 = "■■■■■■■■■□ ";
+
         static public void UpdateStats()
         {
-            //stats = $"[orange3]DMG: {Game.dmg} \nGain {Game.farm1} every 10 seconds \n{p0}";
+            stats = $"STAGE: {Game.stage}"
+                    + $"\n[orange3]DMG: {Game.dmg} [/]";
+            if (Game.farm1 >= 2)
+            {
+                stats += $"\n+ {Game.farm1} score every 10 seconds \n{GenerateProgressBar((Game.time%10), 10)}";
+            }
+
+            if (Game.farm2 >= 10)
+            {
+                stats += $"\n+ {Game.farm2} score every 60 seconds \n{GenerateProgressBar((Game.time%60), 60)}";
+            }
         }
+
+        static public string GenerateProgressBar(int value, int interval)
+        {
+            int progress = Math.Min((value * 10) / interval, 10);
+            return progress switch
+            {
+                0 => p0,
+                1 => p1,
+                2 => p2,
+                3 => p3,
+                4 => p4,
+                5 => p5,
+                6 => p6,
+                7 => p7,
+                8 => p8,
+                9 => p9,
+                _ => p0
+            };
+        }
+
         static public void UpdateTable()
         {
             GameWin.Rows.Clear();
-            GameWin.AddRow(new Markup(stats),image, new Markup("[green]Press /Spacebar/ to attack! \nPress /U/ to upgrade! \nPress /S/ to save! \nPress /L/ to load! \nPress /Backspace/ to exit![/]"));
+            GameWin.AddRow(new Markup($"{stats}"), image, new Markup("[green]Press /Spacebar/ to attack! \nPress /U/ to upgrade! \nPress /S/ to save! \nPress /L/ to load! \nPress /Backspace/ to exit![/]"));
             GameWin.AddRow(new Markup(" "), new Markup($"score: {Game.score}"));
         }
-        
+
         static public void UpgradeMenu()
         {
             Game.selected = true;
-            while (Game.selected == true) 
+            while (Game.selected == true)
             {
                 AnsiConsole.Clear();
 
@@ -169,7 +211,7 @@ namespace ClickBoxin
                 var upgrade = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .PageSize(10)
-                        .AddChoices(new[] { "Exit", "DMG", "SCORE FARM 1", "Upgrade 3" }));
+                        .AddChoices(new[] { "Exit", "DMG", "SCORE FARM CO 10 SEKUND", "SCORE FARM CO MINUTE" }));
 
                 switch (upgrade)
                 {
@@ -179,17 +221,18 @@ namespace ClickBoxin
                     case "DMG":
                         Game.UpgradeLogic(1);
                         break;
-                    case "SCORE FARM 1":
+                    case "SCORE FARM CO 10 SEKUND":
                         Game.UpgradeLogic(2);
                         break;
-                    case "Upgrade 3":
+                    case "SCORE FARM CO MINUTE":
                         Game.UpgradeLogic(3);
                         break;
                 }
-
+                UpdateStats();
                 UpdateTable();
             }
         }
+
         static void Main(string[] args)
         {
             image = new CanvasImage("assets/hum.png");
@@ -207,36 +250,40 @@ namespace ClickBoxin
 
             UpdateTable();
             Game.StartTimer();
+            AnsiConsole.Write(GameWin);
 
             while (Game.esc)
             {
-                AnsiConsole.Write(GameWin);
-                var key = Console.ReadKey(false).Key;
-                switch (key)
+                if (Console.KeyAvailable)
                 {
-                    case ConsoleKey.Backspace:
-                        Game.esc = false;
-                        AnsiConsole.MarkupLine("[bold red]Game Over! Thanks for playing![/]");
-                        Console.ReadKey();
-                        break;
-                    case ConsoleKey.Spacebar:
-                        Game.score += Game.dmg;
-                        break;
-                    case ConsoleKey.U:
-                        UpgradeMenu();
-                        break;
-                    case ConsoleKey.S:
-                        AnsiConsole.MarkupLine("[bold]Saving...[/]");
-                        Game.SaveGame();
-                        break;
-                    case ConsoleKey.L:
-                        AnsiConsole.MarkupLine("[bold]Loading...[/]");
-                        Game.LoadGame();
-                        break;
+                    var key = Console.ReadKey(false).Key;
+                    switch (key)
+                    {
+                        case ConsoleKey.Backspace:
+                            Game.esc = false;
+                            AnsiConsole.MarkupLine("[bold red]Game Over! Thanks for playing![/]");
+                            Console.ReadKey();
+                            break;
+                        case ConsoleKey.Spacebar:
+                            Game.score += Game.dmg;
+                            break;
+                        case ConsoleKey.U:
+                            UpgradeMenu();
+                            break;
+                        case ConsoleKey.S:
+                            AnsiConsole.MarkupLine("[bold]Saving...[/]");
+                            Game.SaveGame();
+                            break;
+                        case ConsoleKey.L:
+                            AnsiConsole.MarkupLine("[bold]Loading...[/]");
+                            Game.LoadGame();
+                            break;
+                    }
+                    UpdateTable();
+                    UpdateStats();
+                    AnsiConsole.Clear();
+                    AnsiConsole.Write(GameWin);
                 }
-                UpdateStats();
-                UpdateTable();
-                AnsiConsole.Clear();
             }
         }
     }
