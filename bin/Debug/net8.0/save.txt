@@ -1,5 +1,5 @@
-Score: 3154
+Score: 134
 Stage: 1
-Dmg: 5
-Farm1: 3
+Dmg: 6
+Farm1: 8
 Farm2: 11
