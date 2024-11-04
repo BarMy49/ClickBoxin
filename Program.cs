@@ -6,23 +6,24 @@ namespace ClickBoxin
     class Window
     {
         static public CanvasImage image;
+        static public CanvasImage bossi;
         static public SoundPlayer music;
+        static public SoundPlayer introm;
+        static public SoundPlayer outrom;
+        static public SoundPlayer err;
+        static public SoundPlayer bossm;
         static public Table GameWin;
 
         static public string stats = "";
 
         static public void UpdateStats()
         {
-            stats = $"STAGE: {Game.player.Stage}"
-                    + $"\n[orange3]DMG: {Game.player.Dmg} [/]";
-            if (Game.farm1 >= 2)
+            stats = $"STAGE: {Game.player.Stage}" +
+                    $"\n[orange3]DMG: {Game.player.Dmg}[/]";
+            for (int i = 0; i < Game.farms.Count; i++)
             {
-                stats += $"\n+ {Game.farm1} score every 10 seconds \n{GenerateProgressBar((Game.time%10), 10)}";
-            }
-
-            if (Game.farm2 >= 10)
-            {
-                stats += $"\n+ {Game.farm2} score every 60 seconds \n{GenerateProgressBar((Game.time%30), 30)}";
+                var farm = Game.farms[i];
+                if(farm.ScoreIncrement > 0) stats += $"\n+ {farm.ScoreIncrement} score every {farm.TimeInterval} seconds \n{GenerateProgressBar(Game.time % farm.TimeInterval, farm.TimeInterval)}";
             }
         }
 
@@ -60,33 +61,38 @@ namespace ClickBoxin
 
         static public void UpgradeMenu()
         {
-            Game.selected = true;
-            while (Game.selected == true)
+            Game.openwin = true;
+            while (Game.openwin == true)
             {
                 AnsiConsole.Clear();
 
                 AnsiConsole.MarkupLine($"[bold]UPGRADE MENU[/]");
                 AnsiConsole.MarkupLine($"[blue]SCORE: {Game.player.Score}[/]\t[red]DMG: {Game.player.Dmg}[/]");
+                var choices = new List<string> { "Exit", "DAMAGE" };
+                for (int i = 0; i < Game.farms.Count; i++)
+                {
+                    var farm = Game.farms[i];
+                    choices.Add($"FARM ({farm.ScoreIncrement+5} score every {farm.TimeInterval} seconds)");
+                }
                 var upgrade = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .PageSize(10)
-                        .AddChoices(new[] { "Exit", "DMG", "SCORE FARM CO 10 SEKUND", "SCORE FARM CO MINUTE" }));
+                        .AddChoices(choices));
 
-                switch (upgrade)
+                if (upgrade == "Exit")
                 {
-                    case "Exit":
-                        Game.selected = false;
-                        break;
-                    case "DMG":
-                        Game.UpgradeLogic(1);
-                        break;
-                    case "SCORE FARM CO 10 SEKUND":
-                        Game.UpgradeLogic(2);
-                        break;
-                    case "SCORE FARM CO MINUTE":
-                        Game.UpgradeLogic(3);
-                        break;
+                    Game.openwin = false;
                 }
+                else if (upgrade == "DAMAGE")
+                {
+                    Game.UpgradeLogic(-1);
+                }
+                else
+                {
+                    int farmIndex = choices.IndexOf(upgrade) - 2;
+                    Game.UpgradeLogic(farmIndex);
+                }
+
                 UpdateStats();
                 UpdateTable();
             }
@@ -94,9 +100,15 @@ namespace ClickBoxin
         
         static public void GetAssets()
         {
-            image = new CanvasImage("assets/hum.png");
+            image = new CanvasImage("../../../assets/hum.png");
+            bossi = new CanvasImage("../../../assets/evil.png");
             image.MaxWidth(15);
-            music = new SoundPlayer("assets/musci.wav");
+            bossi.MaxWidth(15);
+            music = new SoundPlayer("../../../assets/musci.wav");
+            introm = new SoundPlayer("../../../assets/introm.wav");
+            bossm = new SoundPlayer("../../../assets/bossm.wav");
+            outrom = new SoundPlayer("../../../assets/outrom.wav");
+            err = new SoundPlayer("../../../assets/err.wav");
         }
         
         static public void CreateTable()
@@ -111,8 +123,14 @@ namespace ClickBoxin
             GameWin.Columns[0].Width(30);
         }
 
+        static public void BossWindow()
+        {
+            
+        }
+
         static public void Intro()
         {
+            introm.Play();
             for(int i=0;i<20;i++)
             {
                 if(Console.KeyAvailable)
@@ -174,6 +192,7 @@ namespace ClickBoxin
                         break;
                     case 16:
                         AnsiConsole.Write(new FigletText("WELCOM_").Color(Color.Yellow));
+                        err.Play();
                         break;
                     case 17:
                         AnsiConsole.Write(new FigletText(" ").Color(Color.Yellow));
@@ -261,7 +280,9 @@ namespace ClickBoxin
                     AnsiConsole.Write(GameWin);
                 }
             }
-            AnsiConsole.MarkupLine("[bold red]Game Over! Thanks for playing![/]");
+            outrom.Play();
+            AnsiConsole.MarkupLine("[bold red]Game Over! Thanks for playing![/]\n\nPress anything to close the game...");
+            Console.ReadKey();
         }
     }
 }

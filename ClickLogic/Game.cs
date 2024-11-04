@@ -7,103 +7,93 @@ namespace ClickBoxin;
 public class Game
 {
         static public bool esc = true;
-        static public bool selected = false;
+        static public bool openwin = false;
         static public string data = "";
         static public int time = 0;
         
-        static public Player player = new Player(0, 1, 1);
+        static public Player player = new Player(0, 1, 1,0);
         
-        static public int farm1 = 1;
-        static public int farm2 = 1;
+        static public List<Farm> farms = new List<Farm>
+        {
+            new Farm(0, 60, 500),
+            new Farm(0, 40, 1000),
+            new Farm(0, 20, 5000),
+            new Farm(0, 10, 10000),
+            new Farm(0, 5, 20000),
+            new Farm(0, 1, 100000)
+        };
 
         static public void UpgradeLogic(int variable)
         {
-            AnsiConsole.MarkupLine("[bold]Are you sure?[/]");
-            switch (variable)
+            if (variable < 0 || variable >= farms.Count)
             {
-                case 1:
-                    AnsiConsole.MarkupLine($"This will cost {(player.Dmg * 100) * player.Dmg} score!");
-                    break;
-                case 2:
-                    AnsiConsole.MarkupLine($"This will cost {1000 * farm1} score!");
-                    break;
-                case 3:
-                    AnsiConsole.MarkupLine($"This will cost {(1000 * (farm2))/2} score!");
-                    break;
-            }
-            AnsiConsole.MarkupLine("[green]Press /spacebar/ to confirm[/] or [red]any other key to cancel[/]");
+                AnsiConsole.MarkupLine("[bold]Are you sure?[/]");
+                AnsiConsole.MarkupLine($"This will cost {(player.Dmg * 100) * player.Dmg} score!");
+                AnsiConsole.MarkupLine("[green]Press /spacebar/ to confirm[/] or [red]any other key to cancel[/]");
 
-            var key = Console.ReadKey(false).Key;
-            if (key == ConsoleKey.Spacebar)
-            {
-                switch (variable)
+                var key = Console.ReadKey(false).Key;
+                if (key == ConsoleKey.Spacebar)
                 {
-                    case 1:
-                        if (player.Score >= (player.Dmg * 100) * player.Dmg)
-                        {
-                            player.Score -= (player.Dmg * 100) * player.Dmg;
-                            player.Dmg++;
-                        }
-                        else
-                        {
-                            AnsiConsole.MarkupLine("[red]Not enough score![/]");
-                            Console.ReadKey();
-                        }
-                        break;
-                    case 2:
-                        if (player.Score >= 1000 * farm1)
-                        {
-                            player.Score -= 1000 * farm1;
-                            farm1 += 3;
-                        }
-                        else
-                        {
-                            AnsiConsole.MarkupLine("[red]Not enough score![/]");
-                            Console.ReadKey();
-                        }
-                        break;
-                    case 3:
-                        if (player.Score >= 1000 * ((1000 * (farm2))/2))
-                        {
-                            player.Score -= 1000 * ((1000 * (farm2))/2);
-                            farm2 += 20;
-                        }
-                        else
-                        {
-                            AnsiConsole.MarkupLine("[red]Not enough score![/]");
-                            Console.ReadKey();
-                        }
-                        break;
+                    if (player.Score >= (player.Dmg * 100) * player.Dmg)
+                    {
+                        player.Score -= (player.Dmg * 100) * player.Dmg;
+                        player.Dmg++;
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Not enough score![/]");
+                        Console.ReadKey();
+                    }
+                }
+            }else
+            {
+                var farm = farms[variable];
+                AnsiConsole.MarkupLine("[bold]Are you sure?[/]");
+                AnsiConsole.MarkupLine($"This will cost {farm.Cost} score!");
+                AnsiConsole.MarkupLine("[green]Press /spacebar/ to confirm[/] or [red]any other key to cancel[/]");
+
+                var key = Console.ReadKey(false).Key;
+                if (key == ConsoleKey.Spacebar)
+                {
+                    if (player.Score >= farm.Cost)
+                    {
+                        player.Score -= farm.Cost;
+                        farm.ScoreIncrement += 5; // Increase the score increment
+                        farm.Cost += (farm.Cost/2); // Increase the cost by the half of the current cost
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Not enough score![/]");
+                        Console.ReadKey();
+                    }
                 }
             }
         }
 
         static public void StartTimer()
         {
-            var bonusTimer = new Timer(1000); // 1 second
-            bonusTimer.Elapsed += OnTimerElapsed;
-            bonusTimer.AutoReset = true;
-            bonusTimer.Enabled = true;
+            var timer = new Timer(1000); // 1 second
+            timer.Elapsed += OnTimerElapsed;
+            timer.AutoReset = true;
+            timer.Enabled = true;
         }
 
         static public void OnTimerElapsed(Object source, ElapsedEventArgs e)
         {
             time += 1; // Keep track of passed seconds one by one
-            if (selected == false)
+            if (openwin == false&&esc == true)
             {
                 Window.UpdateTable();
                 Window.UpdateStats();
                 AnsiConsole.Clear();
                 AnsiConsole.Write(Window.GameWin);
             }
-            if (time % 10 == 0)
+            foreach (var farm in farms)
             {
-                player.Score += farm1;
-            }
-
-            if (time % 30 == 0)
-            {
-                player.Score += farm2;
+                if (time % farm.TimeInterval == 0)
+                {
+                    player.Score += farm.ScoreIncrement;
+                }
             }
 
             if (time == 120) time = 0;
@@ -113,9 +103,13 @@ public class Game
         {
             data = "Score: " + player.Score.ToString()
                              + "\nStage: " + player.Stage.ToString()
-                             + "\nDmg: " + player.Dmg.ToString()
-                             + "\nFarm1: " + farm1.ToString()
-                             + "\nFarm2: " + farm2.ToString();
+                             + "\nDmg: " + player.Dmg.ToString();
+            for (int i = 0; i < farms.Count; i++)
+            {
+                data += $"\nFarm{i + 1}ScoreIncrement: {farms[i].ScoreIncrement}";
+                data += $"\nFarm{i + 1}TimeInterval: {farms[i].TimeInterval}";
+                data += $"\nFarm{i + 1}Cost: {farms[i].Cost}";
+            }
             File.WriteAllText("save.txt", data);
         }
         static public void LoadGame()
@@ -127,8 +121,12 @@ public class Game
                 player.Score = int.Parse(data[0].Split(":")[1]);
                 player.Stage = int.Parse(data[1].Split(":")[1]);
                 player.Dmg = int.Parse(data[2].Split(":")[1]);
-                Game.farm1 = int.Parse(data[3].Split(":")[1]);
-                Game.farm2 = int.Parse(data[4].Split(":")[1]);
+                for (int i = 0; i < farms.Count; i++)
+                {
+                    farms[i].ScoreIncrement = int.Parse(data[3 + i * 3].Split(":")[1]);
+                    farms[i].TimeInterval = int.Parse(data[4 + i * 3].Split(":")[1]);
+                    farms[i].Cost = int.Parse(data[5 + i * 3].Split(":")[1]);
+                }
             }
         }
 }
