@@ -1,6 +1,5 @@
 # TODO
-- Dodać kolejne upgrady (Kolejna farma, większy czas do bossów, ulty???)
+- Dodać kolejne upgrady (Kolejna farma<DONE>, większy czas do bossów, ulty???)
 - Dodać Bossów
 - Dodać Restart
-- Upiększyć to jebane gówno
-- Podzielić na dwie classy (Game Engine, View Port)
+- Podzielić na classy (Game Engine, View Port) <DONE>
