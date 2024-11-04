@@ -48,7 +48,13 @@ namespace ClickBoxin
         static public void UpdateTable()
         {
             GameWin.Rows.Clear();
-            GameWin.AddRow(new Markup($"{stats}"), image, new Markup("[green]Press /Spacebar/ to attack! \nPress /U/ to upgrade! \nPress /S/ to save! \nPress /L/ to load! \nPress /Backspace/ to exit![/]"));
+            GameWin.AddRow(new Markup($"{stats}"), image
+                , new Markup("[green]Press /Spacebar/ to attack! " +
+                                                                        "\nPress /U/ to upgrade! " +
+                                                                        "\nPress /S/ to save! " +
+                                                                        "\nPress /L/ to load! " +
+                                                                        "\nPress /M/ to mute! " +
+                                                                        "\nPress /Backspace/ to exit![/]"));
             GameWin.AddRow(new Markup(" "), new Markup($"score: {Game.player.Score}"));
         }
 
@@ -193,6 +199,7 @@ namespace ClickBoxin
             
             AnsiConsole.Write(GameWin);
             music.PlayLooping();
+            bool musicOn = true;
             Game.StartTimer();
 
             while (Game.esc)
@@ -210,6 +217,18 @@ namespace ClickBoxin
                             break;
                         case ConsoleKey.U:
                             UpgradeMenu();
+                            break;
+                        case ConsoleKey.M:
+                            if(musicOn)
+                            {
+                                music.Stop();
+                                musicOn = false;
+                            }
+                            else
+                            {
+                                music.PlayLooping();
+                                musicOn = true;
+                            }
                             break;
                         case ConsoleKey.S:
                             AnsiConsole.Status()
