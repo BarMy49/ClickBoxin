@@ -1,4 +1,4 @@
-Score: 134
+Score: 347
 Stage: 1
 Dmg: 6
 Farm1: 8

@@ -85,13 +85,16 @@ namespace ClickBoxin
                 UpdateTable();
             }
         }
-
-        static void Main(string[] args)
+        
+        static public void GetAssets()
         {
             image = new CanvasImage("assets/hum.png");
             image.MaxWidth(15);
             music = new SoundPlayer("assets/musci.wav");
-
+        }
+        
+        static public void CreateTable()
+        {
             GameWin = new Table();
             GameWin.Alignment(Justify.Center);
             GameWin.Width(100);
@@ -100,11 +103,97 @@ namespace ClickBoxin
             GameWin.AddColumn(new TableColumn("[yellow]TRAIN[/]").Centered());
             GameWin.AddColumn(new TableColumn("[blue]MENU[/]").Centered());
             GameWin.Columns[0].Width(30);
+        }
 
+        static public void Intro()
+        {
+            for(int i=0;i<20;i++)
+            {
+                if(Console.KeyAvailable)
+                {
+                    Console.ReadKey();
+                    AnsiConsole.Clear();
+                    break;
+                }
+                AnsiConsole.Clear();
+                switch (i)
+                {
+                    case 0:
+                        AnsiConsole.Write(new FigletText(" ").Color(Color.Yellow));
+                        break;
+                    case 1:
+                        AnsiConsole.Write(new FigletText("_").Color(Color.Yellow));
+                        break;
+                    case 2:
+                        AnsiConsole.Write(new FigletText(" ").Color(Color.Yellow));
+                        break;
+                    case 3:
+                        AnsiConsole.Write(new FigletText("_").Color(Color.Yellow));
+                        break;
+                    case 4:
+                        AnsiConsole.Write(new FigletText(" ").Color(Color.Yellow));
+                        break;
+                    case 5:
+                        AnsiConsole.Write(new FigletText("W_").Color(Color.Yellow));
+                        break;
+                    case 6:
+                        AnsiConsole.Write(new FigletText("WE_").Color(Color.Yellow));
+                        break;
+                    case 7:
+                        AnsiConsole.Write(new FigletText("WEL_").Color(Color.Yellow));
+                        break;
+                    case 8:
+                        AnsiConsole.Write(new FigletText("WELC_").Color(Color.Yellow));
+                        break;
+                    case 9:
+                        AnsiConsole.Write(new FigletText("WELCO_").Color(Color.Yellow));
+                        break;
+                    case 10:
+                        AnsiConsole.Write(new FigletText("WELCOM_").Color(Color.Yellow));
+                        break;
+                    case 11:
+                        AnsiConsole.Write(new FigletText("WELCOME_").Color(Color.Yellow));
+                        break;
+                    case 12:
+                        AnsiConsole.Write(new FigletText("WELCOME ").Color(Color.Yellow));
+                        break;
+                    case 13:
+                        AnsiConsole.Write(new FigletText("WELCOME_").Color(Color.Yellow));
+                        break;
+                    case 14:
+                        AnsiConsole.Write(new FigletText("WELCOME ").Color(Color.Yellow));
+                        break;
+                    case 15:
+                        AnsiConsole.Write(new FigletText("WELCOM_").Color(Color.Yellow));
+                        break;
+                    case 16:
+                        AnsiConsole.Write(new FigletText("WELCOM_").Color(Color.Yellow));
+                        break;
+                    case 17:
+                        AnsiConsole.Write(new FigletText(" ").Color(Color.Yellow));
+                        break;
+                    case 18:
+                        AnsiConsole.Write(new FigletText("_").Color(Color.Yellow));
+                        break;
+                    case 19:
+                        AnsiConsole.Write(new FigletText(" ").Color(Color.Yellow));
+                        break;
+                }
+                System.Threading.Thread.Sleep(500);
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            GetAssets();
+            CreateTable();
             UpdateTable();
-            Game.StartTimer();
+            
+            Intro();
+            
             AnsiConsole.Write(GameWin);
             music.PlayLooping();
+            Game.StartTimer();
 
             while (Game.esc)
             {
@@ -115,8 +204,6 @@ namespace ClickBoxin
                     {
                         case ConsoleKey.Backspace:
                             Game.esc = false;
-                            AnsiConsole.MarkupLine("[bold red]Game Over! Thanks for playing![/]");
-                            Console.ReadKey();
                             break;
                         case ConsoleKey.Spacebar:
                             Game.player.Score += Game.player.Dmg;
@@ -125,11 +212,27 @@ namespace ClickBoxin
                             UpgradeMenu();
                             break;
                         case ConsoleKey.S:
-                            AnsiConsole.MarkupLine("[bold]Saving...[/]");
+                            AnsiConsole.Status()
+                                .AutoRefresh(true)
+                                .Start("[green]Saving...[/]", ctx =>
+                                {   
+                                    System.Threading.Thread.Sleep(1000);
+                                    ctx.Spinner(Spinner.Known.Balloon2);
+                                    ctx.SpinnerStyle(Style.Parse("green"));
+                                    System.Threading.Thread.Sleep(1000);
+                            });
                             Game.SaveGame();
                             break;
                         case ConsoleKey.L:
-                            AnsiConsole.MarkupLine("[bold]Loading...[/]");
+                            AnsiConsole.Status()
+                                .AutoRefresh(true)
+                                .Start("[green]Loading...[/]", ctx =>
+                                {   
+                                    System.Threading.Thread.Sleep(1000);
+                                    ctx.Spinner(Spinner.Known.Balloon);
+                                    ctx.SpinnerStyle(Style.Parse("green"));
+                                    System.Threading.Thread.Sleep(1000);
+                                });
                             Game.LoadGame();
                             break;
                     }
@@ -139,6 +242,7 @@ namespace ClickBoxin
                     AnsiConsole.Write(GameWin);
                 }
             }
+            AnsiConsole.MarkupLine("[bold red]Game Over! Thanks for playing![/]");
         }
     }
 }
