@@ -147,17 +147,6 @@ namespace ClickBoxin
 
         static public string stats = "";
 
-        static public string p0 = "□□□□□□□□□□";
-        static public string p1 = "■□□□□□□□□□ ";
-        static public string p2 = "■■□□□□□□□□ ";
-        static public string p3 = "■■■□□□□□□□ ";
-        static public string p4 = "■■■■□□□□□□ ";
-        static public string p5 = "■■■■■□□□□□ ";
-        static public string p6 = "■■■■■■□□□□ ";
-        static public string p7 = "■■■■■■■□□□ ";
-        static public string p8 = "■■■■■■■■□□ ";
-        static public string p9 = "■■■■■■■■■□ ";
-
         static public void UpdateStats()
         {
             stats = $"STAGE: {Game.stage}"
@@ -178,17 +167,17 @@ namespace ClickBoxin
             int progress = Math.Min((value * 10) / interval, 10);
             return progress switch
             {
-                0 => p0,
-                1 => p1,
-                2 => p2,
-                3 => p3,
-                4 => p4,
-                5 => p5,
-                6 => p6,
-                7 => p7,
-                8 => p8,
-                9 => p9,
-                _ => p0
+                0 => "□□□□□□□□□□",
+                1 => "■□□□□□□□□□",
+                2 => "■■□□□□□□□□",
+                3 => "■■■□□□□□□□",
+                4 => "■■■■□□□□□□",
+                5 => "■■■■■□□□□□",
+                6 => "■■■■■■□□□□",
+                7 => "■■■■■■■□□□",
+                8 => "■■■■■■■■□□",
+                9 => "■■■■■■■■■□",
+                _ => "□□□□□□□□□□"
             };
         }
 
