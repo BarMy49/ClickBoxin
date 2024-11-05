@@ -6,12 +6,14 @@ namespace ClickBoxin;
 
 public class Game
 {
+        static public Player player = new Player(0, 1, 1,0);    
+    
         static public bool esc = true;
-        static public bool openwin = false;
+        static public int WindowOpened = 0; //0 - Main, 1 - Upgrade Menu, 2 - Boss Window, 3 - Ultra Upgrade Menu
         static public string data = "";
         static public int time = 0;
-        
-        static public Player player = new Player(0, 1, 1,0);
+
+        static public Boss boss;
         
         static public List<Farm> farms = new List<Farm>
         {
@@ -22,7 +24,6 @@ public class Game
             new Farm(0, 5, 20000),
             new Farm(0, 1, 100000)
         };
-
         static public void UpgradeLogic(int variable)
         {
             if (variable < 0 || variable >= farms.Count)
@@ -81,12 +82,25 @@ public class Game
         static public void OnTimerElapsed(Object source, ElapsedEventArgs e)
         {
             time += 1; // Keep track of passed seconds one by one
-            if (openwin == false&&esc == true)
+            switch (WindowOpened)
             {
-                Window.UpdateTable();
-                Window.UpdateStats();
-                AnsiConsole.Clear();
-                AnsiConsole.Write(Window.GameWin);
+                case 0:
+                    if (esc == true)
+                    {
+                        Window.UpdateTable();
+                        Window.UpdateStats();
+                        AnsiConsole.Clear();
+                        AnsiConsole.Write(Window.GameWin);
+                    }
+                    break;
+                case 2:
+                {
+                    Window.BossTable();
+                    AnsiConsole.Clear();
+                    AnsiConsole.Write(Window.BossWin);
+                    boss.Time--;
+                    break;
+                }
             }
             foreach (var farm in farms)
             {
@@ -97,6 +111,19 @@ public class Game
             }
 
             if (time == 120) time = 0;
+        }
+
+        static public void CreateBoss(int Stage)
+        {
+             boss = new Boss(Stage);
+        }
+
+        static public void BossWon()
+        {
+            player.Score += boss.Score;
+            player.Stage++;
+            WindowOpened = 0;
+            CreateBoss(player.Stage);
         }
 
         static public void SaveGame()
@@ -127,6 +154,19 @@ public class Game
                     farms[i].TimeInterval = int.Parse(data[4 + i * 3].Split(":")[1]);
                     farms[i].Cost = int.Parse(data[5 + i * 3].Split(":")[1]);
                 }
+            }
+        }
+
+        static public void UltraRestart()
+        {
+            player.Ultra += (player.Stage * 10) + (player.Score/10000) + player.Dmg;
+            Window.UltraRestartLoad();
+            player.Dmg = 1;
+            player.Score = 0;
+            player.Stage = 1;
+            for (int i = 0; i < farms.Count; i++)
+            {
+                farms[i].ScoreIncrement = 0;
             }
         }
 }
