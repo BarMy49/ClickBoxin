@@ -12,6 +12,7 @@ public class Game
         static public int WindowOpened = 0; //0 - Main, 1 - Upgrade Menu, 2 - Boss Window, 3 - Ultra Upgrade Menu
         static public string data = "";
         static public int time = 0;
+        static public int bosstime = 30;
 
         static public Boss boss;
         
@@ -113,9 +114,9 @@ public class Game
             if (time == 120) time = 0;
         }
 
-        static public void CreateBoss(int Stage)
+        static public void CreateBoss(int Stage, int BossTime)
         {
-             boss = new Boss(Stage);
+             boss = new Boss(Stage,BossTime);
         }
 
         static public void BossWon()
@@ -123,7 +124,7 @@ public class Game
             player.Score += boss.Score;
             player.Stage++;
             WindowOpened = 0;
-            CreateBoss(player.Stage);
+            CreateBoss(player.Stage, bosstime);
         }
 
         static public void SaveGame()

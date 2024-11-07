@@ -8,12 +8,12 @@ public class Boss
     public int Time { get; set; }
     public int Score { get; set; }
     
-    public Boss(int stage)
+    public Boss(int stage, int time)
     {
         Stage = stage;
         Cost = (Stage * 1000)*Stage;
         Health = (Stage * 100)*Stage;
-        Time = 30;
+        Time = time;
         Score = Stage * 2000;
     }
 }

@@ -232,7 +232,7 @@ namespace ClickBoxin
             }
             Game.WindowOpened = 0;
             music.PlayLooping();
-            
+            Game.boss.Time = Game.bosstime;
         }
 
         static public void Intro()
@@ -318,7 +318,7 @@ namespace ClickBoxin
             GetAssets();
             CreateTable();
             CreateBossTable();
-            Game.CreateBoss(Game.player.Stage);
+            Game.CreateBoss(Game.player.Stage,Game.bosstime);
             
             Intro();
             
