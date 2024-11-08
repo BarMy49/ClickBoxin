@@ -6,12 +6,14 @@ public class Farm
     public int TimeInterval { get; set; }
     public int InitialCost { get; set; }
     public int Cost { get; set; }
+    public int TimeCost { get; set; }
 
-    public Farm(int scoreIncrement, int timeInterval, int inicost)
+    public Farm(int scoreIncrement, int timeInterval, int inicost, int timecost)
     {
         ScoreIncrement = scoreIncrement;
         TimeInterval = timeInterval;
         InitialCost = inicost;
         Cost = inicost;
+        TimeCost = timecost;
     }
 }

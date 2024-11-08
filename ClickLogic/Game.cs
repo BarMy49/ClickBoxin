@@ -6,7 +6,7 @@ namespace ClickBoxin;
 
 public class Game
 {
-        static public Player player = new Player(0, 1, 1,0);    
+        static public Player player = new Player();    
     
         static public bool esc = true;
         static public int WindowOpened = 0; //0 - Main, 1 - Upgrade Menu, 2 - Boss Window, 3 - Ultra Upgrade Menu
@@ -18,12 +18,12 @@ public class Game
         
         static public List<Farm> farms = new List<Farm>
         {
-            new Farm(0, 60, 500),
-            new Farm(0, 40, 1000),
-            new Farm(0, 20, 5000),
-            new Farm(0, 10, 10000),
-            new Farm(0, 5, 20000),
-            new Farm(0, 1, 100000)
+            new Farm(0, 60, 500, 2),
+            new Farm(0, 50, 1000, 4),
+            new Farm(0, 40, 5000, 8),
+            new Farm(0, 30, 10000, 16),
+            new Farm(0, 20, 20000, 32),
+            new Farm(0, 10, 100000,64)
         };
         static public void UpgradeLogic(int variable)
         {
@@ -60,7 +60,7 @@ public class Game
                     if (player.Score >= farm.Cost)
                     {
                         player.Score -= farm.Cost;
-                        farm.ScoreIncrement += 5; // Increase the score increment
+                        farm.ScoreIncrement += 10; // Increase the score increment
                         farm.Cost += (farm.Cost/2); // Increase the cost by the half of the current cost
                     }
                     else
@@ -160,7 +160,7 @@ public class Game
 
         static public void UltraRestart()
         {
-            player.Ultra += (player.Stage * 10) + (player.Score/10000) + player.Dmg;
+            player.Ultra += (player.Score/10000) * player.Stage * player.Dmg;
             Window.UltraRestartLoad();
             player.Dmg = 1;
             player.Score = 0;
@@ -168,6 +168,73 @@ public class Game
             for (int i = 0; i < farms.Count; i++)
             {
                 farms[i].ScoreIncrement = 0;
+                farms[i].Cost = farms[i].InitialCost;
+            }
+        }
+        static public void UltraUpgradeLogic(int variable)
+        {
+            if (variable < 0 || variable >= farms.Count)
+            {
+                AnsiConsole.MarkupLine("[bold]Are you sure?[/]");
+                AnsiConsole.MarkupLine($"This will cost {player.DmgMulti * player.DmgMulti} ultra!");
+                AnsiConsole.MarkupLine("[green]Press /spacebar/ to confirm[/] or [red]any other key to cancel[/]");
+
+                var key = Console.ReadKey(false).Key;
+                if (key == ConsoleKey.Spacebar)
+                {
+                    if (player.Ultra >= player.DmgMulti * player.DmgMulti)
+                    {
+                        player.Ultra -= player.DmgMulti * player.DmgMulti;
+                        player.DmgMulti++;
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Not enough ultra![/]");
+                        Console.ReadKey();
+                    }
+                }
+            }else if (variable == 0)
+            {
+                AnsiConsole.MarkupLine("[bold]Are you sure?[/]");
+                AnsiConsole.MarkupLine($"This will cost {bosstime/2} ultra!");
+                AnsiConsole.MarkupLine("[green]Press /spacebar/ to confirm[/] or [red]any other key to cancel[/]");
+
+                var key = Console.ReadKey(false).Key;
+                if (key == ConsoleKey.Spacebar)
+                {
+                    if(player.Ultra >= bosstime/2)
+                    {
+                        player.Ultra -= bosstime/2;
+                        bosstime += 1;
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Not enough ultra![/]");
+                        Console.ReadKey();
+                    }
+                }
+            }else
+            {
+                var farm = farms[variable];
+                AnsiConsole.MarkupLine("[bold]Are you sure?[/]");
+                AnsiConsole.MarkupLine($"This will cost {farm.TimeCost} ultra!");
+                AnsiConsole.MarkupLine("[green]Press /spacebar/ to confirm[/] or [red]any other key to cancel[/]");
+
+                var key = Console.ReadKey(false).Key;
+                if (key == ConsoleKey.Spacebar)
+                {
+                    if (player.Ultra >= farm.TimeCost)
+                    {
+                        player.Ultra -= farm.Cost;
+                        farm.TimeInterval -= 1; // Decrease the time interval
+                        farm.TimeCost += (farm.TimeCost/2); // Increase the cost by the half of the current cost
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Not enough ultra![/]");
+                        Console.ReadKey();
+                    }
+                }
             }
         }
 }

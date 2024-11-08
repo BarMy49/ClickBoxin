@@ -46,7 +46,7 @@ namespace ClickBoxin
         static public void UpdateStats()
         {
             stats = $"STAGE: {Game.player.Stage}" +
-                    $"\n[orange3]DMG: {Game.player.Dmg}[/]";
+                    $"\n[orange3]DMG: {Game.player.Dmg} X{Game.player.DmgMulti}[/]";
             for (int i = 0; i < Game.farms.Count; i++)
             {
                 var farm = Game.farms[i];
@@ -62,6 +62,8 @@ namespace ClickBoxin
                                                                         "\nPress /S/ to save! " +
                                                                         "\nPress /L/ to load! " +
                                                                         "\nPress /M/ to mute! " +
+                                                                        "\nPress /I/ to ultra upgrade! " +
+                                                                        "\nPress /r/ to restart! " +
                                                                         "\nPress /Backspace/ to exit![/]"));
             GameWin.AddRow(new Markup(" "), new Markup($"score: {Game.player.Score}"), new Markup($"Press /B/ to FIGHT THE BOSS!\nCost: {Game.boss.Cost}"));
         }
@@ -70,7 +72,7 @@ namespace ClickBoxin
             int progress = Math.Min((value * 10) / interval, 10);
             return progress switch
             {
-                0 => "□□□□□□□□□□",
+                0 => "▭▱◁△□",
                 1 => "■□□□□□□□□□",
                 2 => "■■□□□□□□□□",
                 3 => "■■■□□□□□□□",
@@ -128,13 +130,16 @@ namespace ClickBoxin
             {
                 AnsiConsole.Clear();
 
-                AnsiConsole.MarkupLine($"[bold]ULTRA UPGRADE MENU[/]");
-                AnsiConsole.MarkupLine($"[blue]ULTRA: {Game.player.Score}[/]\t[red]DMG: {Game.player.Dmg}[/]");
-                var choices = new List<string> { "Exit", "DAMAGE MULTIPLIER" };
+                AnsiConsole.MarkupLine($"[bold]ULTRA UPGRADE MENU[/]\n[green]Ultra upgrades stay after restart![/]");
+                AnsiConsole.MarkupLine($"[blue]ULTRA: {Game.player.Ultra}[/]\t[red]DMG: {Game.player.Dmg} X{Game.player.DmgMulti}[/]");
+                var choices = new List<string> { "Exit", 
+                    $"DAMAGE MULTIPLIER [green]for {Game.player.DmgMulti * Game.player.DmgMulti}[/]",
+                    $"GREATER BOSS TIME! [green]for {Game.bosstime/2}[/]"
+                };
                 for (int i = 0; i < Game.farms.Count; i++)
                 {
                     var farm = Game.farms[i];
-                    choices.Add($"FARM ({farm.ScoreIncrement+5} score every {farm.TimeInterval} seconds)");
+                    choices.Add($"LOWER FARM'S TIME! Current: {farm.TimeInterval} seconds [green]for {Game.farms[i].TimeCost}[/]");
                 }
                 var upgrade = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -145,14 +150,18 @@ namespace ClickBoxin
                 {
                     Game.WindowOpened = 0;
                 }
-                else if (upgrade == "DAMAGE")
+                else if (upgrade == $"DAMAGE MULTIPLIER [green]for {Game.player.DmgMulti * Game.player.DmgMulti} ultra[/]")
                 {
-                    Game.UpgradeLogic(-1);
+                    Game.UltraUpgradeLogic(-1);
+                }
+                else if (upgrade == $"GREATER BOSS TIME! [green]for {Game.bosstime/2} ultra[/]")
+                {
+                    Game.UltraUpgradeLogic(0);
                 }
                 else
                 {
                     int farmIndex = choices.IndexOf(upgrade) - 2;
-                    Game.UpgradeLogic(farmIndex);
+                    Game.UltraUpgradeLogic(farmIndex);
                 }
 
                 UpdateStats();
@@ -207,7 +216,7 @@ namespace ClickBoxin
                     switch (key)
                     {
                         case ConsoleKey.Spacebar:
-                            Game.boss.Health -= Game.player.Dmg;
+                            Game.boss.Health -= (Game.player.Dmg*Game.player.DmgMulti);
                             break;
                         case ConsoleKey.M:
                             if(musicOn)
@@ -283,6 +292,7 @@ namespace ClickBoxin
         static public void UltraRestartLoad()
         {
             Game.WindowOpened = 4;
+            music.Stop();
             AnsiConsole.Clear();
             AnsiConsole.Status()
                 .AutoRefresh(true)
@@ -339,7 +349,7 @@ namespace ClickBoxin
                             Game.esc = false;
                             break;
                         case ConsoleKey.Spacebar:
-                            Game.player.Score += Game.player.Dmg;
+                            Game.player.Score += (Game.player.Dmg*Game.player.DmgMulti);
                             break;
                         case ConsoleKey.U:
                             UpgradeMenu();
@@ -367,6 +377,20 @@ namespace ClickBoxin
                             {
                                 Game.player.Score -= Game.boss.Cost;
                                 BossWindow();
+                            }
+                            break;
+                        }
+                        case ConsoleKey.R:
+                        {
+                            Game.WindowOpened = 4;
+                            AnsiConsole.Clear();
+                            AnsiConsole.MarkupLine("[bold]Are you sure?[/]");
+                            AnsiConsole.MarkupLine($"You will lose all your progress but gain [bold]{(Game.player.Score/10000) * Game.player.Stage * Game.player.Dmg} ULTRA![/]\n[italic grey]Ultra will be counted from 10000 score! || Ultra upgrades stay after restart![/]");
+                            AnsiConsole.MarkupLine("[green]Press /spacebar/ to confirm[/] or [red]any other key to cancel[/]");
+                            key = Console.ReadKey(true).Key;
+                            if (key == ConsoleKey.Spacebar)
+                            {
+                                Game.UltraRestart();
                             }
                             break;
                         }

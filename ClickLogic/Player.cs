@@ -5,13 +5,15 @@ public class Player
     public int Score { get; set; }
     public int Stage { get; set; }
     public int Dmg { get; set; }
+    public int DmgMulti { get; set; }
     public int Ultra { get; set; }
     
-    public Player(int score, int stage, int dmg, int ultra)
+    public Player()
     {
-        Score = score;
-        Stage = stage;
-        Dmg = dmg;
-        Ultra = ultra;
+        Score = 1;
+        Stage = 1;
+        Dmg = 1;
+        DmgMulti = 1;
+        Ultra = 0;
     }
 }
