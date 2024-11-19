@@ -28,12 +28,18 @@ public class Farm
     public void Restart()
     {
         Lvl = 0;
+        ScorePP = 0;
         Cost = InitialCost;
     }
     public void UpgradeTime()
     {
         TimeInterval -= 1;
         TimeCost *= 2;
+    }
+
+    public void SetScorePP()
+    {
+        ScorePP=10*Lvl;
     }
     
 }

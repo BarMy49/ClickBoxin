@@ -1,6 +1,7 @@
 ﻿using System.Media;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using Windows.Media.Capture;
 using Spectre.Console;
 using SixLabors.ImageSharp;
@@ -29,6 +30,7 @@ namespace ClickBoxin
         static public string[] daily = new string[7];
         static public bool musicOn;
         static public bool SpacebarPressed = false;
+        static public GamblingMachine GamblingMachine = new GamblingMachine();
 
         static public void GetAssets()
         {
@@ -175,20 +177,12 @@ namespace ClickBoxin
                 var choices = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .PageSize(10)
-                        .AddChoices("Exit", "Change Name", "Save Game", "Load Game", "Audio Off/On", "Reset All Progress"));
+                        .AddChoices("Exit", "Save Game", "Load Game", "Audio Off/On", "Reset All Progress"));
 
                 switch (choices)
                 {
                     case "Exit":
                         Game.WindowOpened = 0;
-                        break;
-                    case "Change Name":
-                        AnsiConsole.Clear();
-                        AnsiConsole.MarkupLine("[Green]Enter your new username:[/]");
-                        Game.player.Name = Console.ReadLine();
-                        Game.SaveName(Game.player.Name);
-                        Game.SaveGame();
-                        AnsiConsole.Clear();
                         break;
                     case "Save Game":
                         Game.SaveGame();
@@ -283,6 +277,7 @@ namespace ClickBoxin
                 UpdateDailyBonus();
                 AnsiConsole.MarkupLine($"[bold blue]DAILY LOGIN BONUS \t DAILY STREAK: {Game.player.DailyLoginStreak}[/]");
                 AnsiConsole.Write(DailyBonus);
+                AnsiConsole.WriteLine($"{Game.player.Name} STATS(Stage: {Game.player.Stage} Score: {Game.player.Score}[blue]Ultra: {Game.player.Ultra}[/] [orange3]Dmg: {Game.player.Dmg} [bold]Dmg Multi: {Game.player.DmgMulti}[/][/] Tickets: {Game.player.Tickets} Restarts: {Game.player.Restarts})");
                 AnsiConsole.MarkupLine($"[bold]CLICK MENU[/]");
                 var choices = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -350,9 +345,79 @@ namespace ClickBoxin
             while (Game.WindowOpened == 9)
             {
                 AnsiConsole.Clear();
-                
-                AnsiConsole.MarkupLine($"[bold]LET'S GO GAMBLING![/]");
-                
+                AnsiConsole.Write(new FigletText("GAMBLE").Color(SCColor.Yellow));
+                AnsiConsole.MarkupLine($"[bold]LET'S GO GAMBLING![/][green]Tickets: {Game.player.Tickets}[/] Score:{Game.player.Score} [blue]Ultra: {Game.player.Ultra} [/][bold]Stage: {Game.player.Stage}[/]");
+                AnsiConsole.MarkupLine($"[green bold]WARNING![/] [green]Gamble Machine can set the values at negative(except Stage) and also doesn't update current boss!\n\tThe game will also automatically save after gambling![/]");
+                var choices = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .PageSize(10)
+                        .AddChoices("Exit", "GAMBLE \t\t for 1 Ticket", "EPIC GAMBLE \t for 10 Tickets"));
+                switch (choices)
+                {
+                    case "Exit":
+                        Game.WindowOpened = 0;
+                        break;
+                    case  "GAMBLE \t\t for 1 Ticket":
+                        Game.Achievs[13].Unlock();
+                        Game.player.Tickets--;
+                        AnsiConsole.Status()
+                            .AutoRefresh(true)
+                            .Spinner(Spinner.Known.Balloon)
+                            .SpinnerStyle(Style.Parse("bold red"))
+                            .Start("[bold red]GAMBLE...[/]", ctx =>
+                            {   
+                                System.Threading.Thread.Sleep(1000);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: +10000 Score[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: +10 Ultra[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: +2Tickets Score[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: -10 Ultra[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: +1 Stage[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: -1 Ticket[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: -10000 Score[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: 10000 Score[/]");
+                                System.Threading.Thread.Sleep(50);
+                            });
+                        GamblingMachine.SpinWheelBasic();
+                        Game.SaveGame();
+                        break;
+                    case "EPIC GAMBLE \t for 10 Tickets":
+                        Game.Achievs[13].Unlock();
+                        Game.player.Tickets--;
+                        AnsiConsole.Status()
+                            .AutoRefresh(true)
+                            .Spinner(Spinner.Known.Balloon)
+                            .SpinnerStyle(Style.Parse("bold red"))
+                            .Start("[bold red]EPIC GAMBLE...[/]", ctx =>
+                            {   
+                                System.Threading.Thread.Sleep(1000);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: +10000 Score[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: +10 Ultra[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: +2Tickets Score[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: -10 Ultra[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: +1 Stage[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: -1 Ticket[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: -10000 Score[/]");
+                                System.Threading.Thread.Sleep(50);
+                                AnsiConsole.MarkupLine("[green]GAMBLE: 10000 Score[/]");
+                                System.Threading.Thread.Sleep(50);
+                            });
+                        GamblingMachine.SpinWheelAdvanced();
+                        Game.SaveGame();
+                        break;
+                }
 
                 UpdateStats();
                 UpdateTable();
@@ -367,11 +432,11 @@ namespace ClickBoxin
 
                 AnsiConsole.MarkupLine($"[bold]UPGRADE MENU[/]");
                 AnsiConsole.MarkupLine($"[blue]SCORE: {Game.player.Score}[/]\t[red]DMG: {Game.player.Dmg}[/]");
-                var choices = new List<string> { "Exit", "DAMAGE" };
+                var choices = new List<string> { "Exit", $"DAMAGE \t\t cost:{(Game.player.Dmg * 100) * Game.player.Dmg}" };
                 for (int i = 0; i < Game.farms.Count; i++)
                 {
                     var farm = Game.farms[i];
-                    choices.Add($"FARM ({farm.ScorePP+5} score every {farm.TimeInterval} seconds)");
+                    choices.Add($"{farm.TimeInterval} SECOND FARM \t cost:{farm.Cost}");
                 }
                 var upgrade = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -382,7 +447,7 @@ namespace ClickBoxin
                 {
                     Game.WindowOpened = 0;
                 }
-                else if (upgrade == "DAMAGE")
+                else if (upgrade == $"DAMAGE \t\t cost:{(Game.player.Dmg * 100) * Game.player.Dmg}")
                 {
                     Game.UpgradeLogic(-1);
                 }

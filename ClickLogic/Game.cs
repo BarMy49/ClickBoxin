@@ -200,32 +200,33 @@ public class Game
             Achievs[2].Unlock();
             player.Score += boss.Score;
             player.Stage++;
+            player.Tickets++;
             WindowOpened = 0;
             CreateBoss(player.Stage, bosstime);
         }
 
         static public void SaveGame()
         {
-            data = "Score - " + player.Score.ToString()
-                             + "\nStage-" + player.Stage.ToString()
-                             + "\nDmg-" + player.Dmg.ToString()
-                             +"\nDmgMulti-" + player.DmgMulti.ToString()
-                             + "\nUltra-" + player.Ultra.ToString()
-                             + "\nTickets-" + player.Tickets.ToString()
-                             + "\nRestarts-" + player.Restarts.ToString()
-                             + "\nLastRewardClaimDate-" + player.LastRewardClaimDate.ToString()
-                             + "\nDailyLoginStreak-" + player.DailyLoginStreak.ToString();
+            data = "Score;" + player.Score.ToString()
+                             + "\nStage;" + player.Stage.ToString()
+                             + "\nDmg;" + player.Dmg.ToString()
+                             +"\nDmgMulti;" + player.DmgMulti.ToString()
+                             + "\nUltra;" + player.Ultra.ToString()
+                             + "\nTickets;" + player.Tickets.ToString()
+                             + "\nRestarts;" + player.Restarts.ToString()
+                             + "\nLastRewardClaimDate;" + player.LastRewardClaimDate.ToString()
+                             + "\nDailyLoginStreak;" + player.DailyLoginStreak.ToString();
             for (int i = 0; i < farms.Count; i++)
             {
-                data += $"\nFarm{i + 1}ScorePP-{farms[i].Lvl}";
-                data += $"\nFarm{i + 1}Cost-{farms[i].Cost}";
-                data += $"\nFarm{i + 1}TimeCost-{farms[i].TimeCost}";
+                data += $"\nFarm{i + 1}Lvl;{farms[i].Lvl}";
+                data += $"\nFarm{i + 1}Cost;{farms[i].Cost}";
+                data += $"\nFarm{i + 1}TimeCost;{farms[i].TimeCost}";
             }
             for(int i=0; i < Achievs.Count; i++)
             {
-                data += $"\nAchievement{i}-{(Achievs[i].IsUnlocked ? 1 : 0)}";
+                data += $"\nAchievement{i};{(Achievs[i].IsUnlocked ? 1 : 0)}";
             }
-            data += $"\nProfile-{player.Name}";
+            data += $"\nProfile;{player.Name}";
             File.WriteAllText($"saves/save_{player.Name}.txt", data);
         }
         static public void LoadGame(string profile)
@@ -234,29 +235,30 @@ public class Game
             {
                 Game.data = File.ReadAllText($"saves/save_{profile}.txt");
                 string[] data = Game.data.Split("\n"); 
-                player.Score = int.Parse(data[0].Split("-")[1]);
-                player.Stage = int.Parse(data[1].Split("-")[1]);
-                player.Dmg = int.Parse(data[2].Split("-")[1]);
-                player.DmgMulti = int.Parse(data[3].Split("-")[1]);
-                player.Ultra = int.Parse(data[4].Split("-")[1]);
-                player.Tickets = int.Parse(data[5].Split("-")[1]);
-                player.Restarts = int.Parse(data[6].Split("-")[1]);
-                player.LastRewardClaimDate = DateTime.Parse(data[7].Split("-")[1]);
-                player.DailyLoginStreak = int.Parse(data[8].Split("-")[1]);
+                player.Score = int.Parse(data[0].Split(";")[1]);
+                player.Stage = int.Parse(data[1].Split(";")[1]);
+                player.Dmg = int.Parse(data[2].Split(";")[1]);
+                player.DmgMulti = int.Parse(data[3].Split(";")[1]);
+                player.Ultra = int.Parse(data[4].Split(";")[1]);
+                player.Tickets = int.Parse(data[5].Split(";")[1]);
+                player.Restarts = int.Parse(data[6].Split(";")[1]);
+                player.LastRewardClaimDate = DateTime.Parse(data[7].Split(";")[1]);
+                player.DailyLoginStreak = int.Parse(data[8].Split(";")[1]);
                 for (int i = 0; i < farms.Count; i++)
                 {
-                    farms[i].Lvl = int.Parse(data[i * 3 + 9].Split("-")[1]);
-                    farms[i].Cost = int.Parse(data[i * 3 + 10].Split("-")[1]);
-                    farms[i].TimeCost = int.Parse(data[i * 3 + 11].Split("-")[1]);
+                    farms[i].Lvl = int.Parse(data[i * 3 + 9].Split(";")[1]);
+                    farms[i].Cost = int.Parse(data[i * 3 + 10].Split(";")[1]);
+                    farms[i].TimeCost = int.Parse(data[i * 3 + 11].Split(";")[1]);
+                    farms[i].SetScorePP();
                 }
                 for (int i = 0; i < Achievs.Count; i++)
                 {
-                    if(int.Parse(data[i + 27].Split("-")[1]) == 1)
+                    if(int.Parse(data[i + 27].Split(";")[1]) == 1)
                     {
-                        Achievs[i].Unlock();
+                        Achievs[i].IsUnlocked = true;
                     }
                 }
-                player.Name = data[43].Split("-")[1];
+                player.Name = data[43].Split(";")[1];
                 boss = new Boss(player.Stage, bosstime);
             }
         }
