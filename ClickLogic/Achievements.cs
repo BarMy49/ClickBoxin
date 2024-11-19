@@ -6,6 +6,7 @@ namespace ClickBoxin
         public string Name { get; set; }
         public string Description { get; set; }
         public bool IsUnlocked { get; set; }
+        public int CountUnlocked { get; set; }
 
         public Achievements(string name, string description)
         {
@@ -16,15 +17,18 @@ namespace ClickBoxin
 
         public void Unlock()
         {
-            IsUnlocked = true;
+            if (IsUnlocked == false)
+            {
+                IsUnlocked = true;
 #if WINDOWS_UWP
-            new ToastContentBuilder()
-                .AddText("Achievement Unlocked!")
-                .AddText($"{Name}: {Description}")
-                .Show();
+                new ToastContentBuilder()
+                    .AddText("Achievement Unlocked!")
+                    .AddText($"{Name}: {Description}")
+                    .Show();
 #else
             Console.WriteLine($"Achievement Unlocked: {Name} \n{Description}");
 #endif
+            }
         }
         public void Lock()
         {

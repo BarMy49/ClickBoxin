@@ -22,9 +22,11 @@ namespace ClickBoxin
         
         static public Table GameWin;
         static public Table BossWin;
+        static public Table DailyBonus;
 
         static public string stats = "";
         static public string menu = "";
+        static public string[] daily = new string[7];
         static public bool musicOn;
         static public bool SpacebarPressed = false;
 
@@ -49,6 +51,15 @@ namespace ClickBoxin
             GameWin.AddColumn(new TableColumn("[yellow]TRAIN[/]").Centered());
             GameWin.AddColumn(new TableColumn("[blue]MENU[/]").Centered());
             GameWin.Columns[0].Width(30);
+            
+            DailyBonus = new Table();
+            DailyBonus.Alignment(Justify.Center);
+            DailyBonus.Width(100);
+            DailyBonus.Border(TableBorder.Double);
+            for (int i = 0; i < 7; i++)
+            {
+                DailyBonus.AddColumn(new TableColumn($"[bold]DAY {i+1}[/]").Centered());
+            }
         }
         static public void UpdateStats()
         {
@@ -71,6 +82,68 @@ namespace ClickBoxin
             GameWin.Rows.Clear();
             GameWin.AddRow(new Markup($"{stats}"), image, new Markup(menu));
             GameWin.AddRow(new Markup(" "), new Markup($"score: {Game.player.Score}"), new Markup($"Press /B/ to FIGHT THE BOSS!\nCost: {Game.boss.Cost}"));
+        }
+        static public void UpdateDailyBonus()
+        {
+            DailyBonus.Rows.Clear();
+            for (int i = 0; i < 7; i++)
+            {
+                if((Game.player.DailyLoginStreak-1)%7 < i)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            daily[i] = "500 Score\n[green]CLAIM[/]";
+                            break;
+                        case 1:
+                            daily[i] = "5000 Score\n[green]CLAIM[/]";
+                            break;
+                        case 2:
+                            daily[i]= "3 Tickets\n[green]CLAIM[/]";
+                            break;
+                        case 3:
+                            daily[i] = "10000 Score\n[green]CLAIM[/]";
+                            break;
+                        case 4:
+                            daily[i] = "10 Ultra\n[green]CLAIM[/]";
+                            break;
+                        case 5:
+                            daily[i] = "6 Tickets\n[green]CLAIM[/]";
+                            break;
+                        case 6:
+                            daily[i] = "100000 Score\n[green]CLAIM[/]";
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            daily[i] = "500 Score\n[red]CLAIMED[/]";
+                            break;
+                        case 1:
+                            daily[i] = "5000 Score\n[red]CLAIMED[/]";
+                            break;
+                        case 2:
+                            daily[i] = "3 Tickets\n[red]CLAIMED[/]";
+                            break;
+                        case 3:
+                            daily[i] = "10000 Score\n[red]CLAIMED[/]";
+                            break;
+                        case 4:
+                            daily[i] = "10 Ultra\n[red]CLAIMED[/]";
+                            break;
+                        case 5:
+                            daily[i] = "6 Tickets\n[red]CLAIMED[/]";
+                            break;
+                        case 6:
+                            daily[i] = "100000 Score\n[red]CLAIMED[/]";
+                            break;
+                    }
+                }
+            }
+            DailyBonus.AddRow(daily[0], daily[1], daily[2], daily[3], daily[4], daily[5], daily[6]);
         }
         static public string GenerateProgressBar(int value, int interval)
         {
@@ -163,7 +236,7 @@ namespace ClickBoxin
             while (Game.WindowOpened == 6)
             {
                 AnsiConsole.Clear();
-
+                
                 AnsiConsole.MarkupLine($"[bold]LOAD MENU[/]");
                 AnsiConsole.MarkupLine($"[green]Choose the profile to load[/]");
                 var choices = new List<string> {"Exit"};
@@ -207,11 +280,12 @@ namespace ClickBoxin
             while (Game.WindowOpened == 7)
             {
                 AnsiConsole.Clear();
-
+                UpdateDailyBonus();
+                AnsiConsole.MarkupLine($"[bold blue]DAILY LOGIN BONUS \t DAILY STREAK: {Game.player.DailyLoginStreak}[/]");
+                AnsiConsole.Write(DailyBonus);
                 AnsiConsole.MarkupLine($"[bold]CLICK MENU[/]");
                 var choices = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
-                        .Title("Menu")
                         .PageSize(10)
                         .AddChoices("Exit", "Claim Daily Reward", "Ultra Upgrade", "Achievements", "Gamble Machine"));
                 switch (choices)
@@ -220,7 +294,14 @@ namespace ClickBoxin
                         Game.WindowOpened = 0;
                         break;
                     case "Claim Daily Reward":
-                        Game.ClaimReward();
+                        if(Game.player.HasClaimedRewardToday())
+                        {
+                            AnsiConsole.MarkupLine("[red]You have already claimed your reward today![/]");
+                        }
+                        else
+                        {
+                            Game.ClaimReward();
+                        }
                         break;
                     case "Ultra Upgrade":
                         UltraUpgradeMenu();
@@ -243,9 +324,21 @@ namespace ClickBoxin
             while (Game.WindowOpened == 8)
             {
                 AnsiConsole.Clear();
-
                 AnsiConsole.MarkupLine($"[bold]ACHIEVEMENTS MENU[/]");
-                
+                for(int i = 0; i<Game.Achievs.Count;i++)
+                {
+                    if (Game.Achievs[i].IsUnlocked)
+                    {
+                        AnsiConsole.MarkupLine($"[bold green]{Game.Achievs[i].Name}[/]\n{Game.Achievs[i].Description} \t\t\t UNLOCKED[/]");
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine($"[red]{Game.Achievs[i].Name}[/]\n{Game.Achievs[i].Description} \t\t\t LOCKED[/]");
+                    }
+                }
+
+                Console.ReadKey();
+                Game.WindowOpened = 0;
 
                 UpdateStats();
                 UpdateTable();
@@ -257,7 +350,7 @@ namespace ClickBoxin
             while (Game.WindowOpened == 9)
             {
                 AnsiConsole.Clear();
-
+                
                 AnsiConsole.MarkupLine($"[bold]LET'S GO GAMBLING![/]");
                 
 
@@ -601,6 +694,7 @@ namespace ClickBoxin
                             key = Console.ReadKey(true).Key;
                             if (key == ConsoleKey.Spacebar)
                             {
+                                UltraRestartLoad();
                                 Game.UltraRestart();
                             }
                             break;

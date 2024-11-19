@@ -86,6 +86,10 @@ public class Game
                     {
                         player.Score -= (player.Dmg * 100) * player.Dmg;
                         player.Dmg++;
+                        if(player.Dmg == 2)
+                        {
+                            Achievs[0].Unlock();
+                        }
                     }
                     else
                     {
@@ -107,6 +111,10 @@ public class Game
                     {
                         player.Score -= farm.Cost;
                         farm.Upgrade();
+                        if(farm.Lvl == 1)
+                        {
+                            Achievs[1].Unlock();
+                        }
                     }
                     else
                     {
@@ -155,7 +163,30 @@ public class Game
                     player.Score += farm.ScorePP;
                 }
             }
-
+            if(player.Score >= 10000)
+            {
+                Achievs[3].Unlock();
+            }
+            if(player.Score >= 500000)
+            {
+                Achievs[4].Unlock();
+            }
+            if(player.Score >= 1000000)
+            {
+                Achievs[5].Unlock();
+            }
+            if(player.Stage >= 10)
+            {
+                Achievs[8].Unlock();
+            }
+            if(player.Restarts >= 10)
+            {
+                Achievs[9].Unlock();
+            }
+            if(player.Tickets >= 10)
+            {
+                Achievs[14].Unlock();
+            }
             if (time == 120) time = 0;
         }
 
@@ -166,6 +197,7 @@ public class Game
 
         static public void BossWon()
         {
+            Achievs[2].Unlock();
             player.Score += boss.Score;
             player.Stage++;
             WindowOpened = 0;
@@ -231,12 +263,12 @@ public class Game
 
         static public void UltraRestart()
         {
-            Window.UltraRestartLoad();
             player.Restart();
             for (int i = 0; i < farms.Count; i++)
             {
                 farms[i].Restart();
             }
+            Achievs[6].Unlock();
         }
         static public void UltraUpgradeLogic(int variable)
         {
@@ -253,6 +285,10 @@ public class Game
                     {
                         player.Ultra -= player.DmgMulti * player.DmgMulti;
                         player.DmgMulti++;
+                        if(player.DmgMulti == 2)
+                        {
+                            Achievs[7].Unlock();
+                        }
                     }
                     else
                     {
@@ -273,6 +309,10 @@ public class Game
                     {
                         player.Ultra -= bosstime/2;
                         bosstime += 1;
+                        if(bosstime == 31)
+                        {
+                            Achievs[7].Unlock();
+                        }
                     }
                     else
                     {
@@ -295,6 +335,7 @@ public class Game
                         player.Ultra -= farm.Cost;
                         farm.TimeInterval -= 1; // Decrease the time interval
                         farm.TimeCost += (farm.TimeCost/2); // Increase the cost by the half of the current cost
+                        Achievs[7].Unlock();
                     }
                     else
                     {
@@ -306,7 +347,7 @@ public class Game
         }
         static public void DailyLoginBonus()
         {
-            if (player.DailyLoginStreak <= 7 || player.LastRewardClaimDate.Date == DateTime.Today.AddDays(-1))
+            if (player.LastRewardClaimDate.Date == DateTime.Today.AddDays(-1))
             {
                 player.DailyLoginStreak++;
             }
@@ -351,8 +392,43 @@ public class Game
         {
             if (!player.HasClaimedRewardToday())
             {
-                // Add reward logic here
+                DailyLoginBonus();
                 player.LastRewardClaimDate = DateTime.Today;
+            }
+            switch (player.DailyLoginStreak)
+            {
+                case 2:
+                    Achievs[10].Unlock();
+                    break;
+                case 7:
+                    Achievs[11].Unlock();
+                    break;
+                case 30:
+                    Achievs[12].Unlock();
+                    break;
+            }
+        }
+
+        static public void GambleLogic(int gamble)
+        {
+            if (player.Tickets >= 1)
+            {
+                player.Tickets -= 1;
+                Random rnd = new Random();
+                int win = rnd.Next(0, 100);
+                if (win < 50)
+                {
+                    player.Score += 1000;
+                    AnsiConsole.MarkupLine("[bold]You've won 1000 Score![/]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[bold]You've lost![/]");
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[red]Not enough tickets![/]");
             }
         }
 }
