@@ -1,11 +1,14 @@
-# TODO
-- Dodać kolejne upgrady (Kolejna farma) DONE
-- Dodać Bossów DONE
-- Dodać Restart DONE
-- Podzielić na classy (Game Engine, View Port) DONE
-- Dodać Ultra Upgrady DONE
-- Potężny Rework DONE
-- Dodać Achivementy
-- Dodać więcej obrazków
-- Dodać gambling machine
-- Dodać daily login bonus
+# FUNKCJONALNOŚCI
+- Naciśnięcie spacji powoduje wzrost zmiennej score
+- Gra jest odświeżana co sekundę lub po naciśnięciu spacji
+- Za score można kupować różne ulepszenia typu: Większy wzrost score za kliknięcie/Automatyczne nabijanie score'a(Farma)
+- Po uzyskaniu wystarczającej ilości score można zawalczyć z bossem
+- Życie bossa jest zmiejszane o wartość dmg i trzeba go pokonać w określonym czasie
+- Po pokonanym bossie gracz wchodzi na wyższy poziom i dostaje bilet do użycia na losowanie(Gambling Machine)
+- Gracz może zrestartować progres aby otrzymać specjalną walutę (Ultra), którą będzie mógł przeznaczyć na lepsze ulepszenia
+- Ultra ulepszenia mogą zwiększyć mnożnik dmg, zmnijeszyć czas trwania Farm lub zwiększyć czas Bossa
+- Są także osiągnięcia (Typu nabij x Score'a, Zresetuj grę po raz pierwszy, itd), które są sygnalizowane powiadomieniem windowsowym
+- Przy każdym zalogowaniu gra sprawdza kiedy ostatnio gracz się logował i może za to odbierać codzienne nagrody plus zwiększać swój rekord codziennych logowań
+- Jest muzyka grana w tle którą można wyciszać i na odwórt
+- Gra obsługuje kilka profili zapisów (Wielu graczy może mieć swój własny zapis gry a następnie go wczytać wybierając swoją nazwę użytkownika)
+- Gracz może także usunąć cały swój progres aby zacząć zupełnie od nowa
