@@ -7,3 +7,4 @@
 - Dodać Achivementy
 - Dodać więcej obrazków
 - Dodać gambling machine
+- Dodać daily login bonus
