@@ -34,11 +34,11 @@ public class Player
 
     public void Restart()
     {
+        Ultra += (Score/10000) * Stage * Dmg;
         Stage = 1;
         Score = 0;
         Dmg = 1;
         Restarts++;
-        Ultra += (Score/10000) * Stage * Dmg;
     }
     
 }

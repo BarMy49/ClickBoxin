@@ -14,6 +14,6 @@ public class Boss
         Cost = (Stage * 1000)*Stage;
         Health = (Stage * 100)*Stage;
         Time = time;
-        Score = (Stage * 1000)*Stage;
+        Score = ((Stage * 1000)*Stage)+Stage*1000;
     }
 }

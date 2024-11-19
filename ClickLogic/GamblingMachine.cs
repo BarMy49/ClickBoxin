@@ -65,7 +65,7 @@ public class GamblingMachine
     }
     public static void SpinWheelAdvanced()
     {
-        int prizeIndex = random.Next(0, 10); // Assuming 8 different prizes
+        int prizeIndex = random.Next(0, 10);
         switch (prizeIndex)
         {
             case 0:

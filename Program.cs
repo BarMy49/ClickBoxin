@@ -35,9 +35,7 @@ namespace ClickBoxin
         static public void GetAssets()
         {
             image = new CanvasImage("../../../assets/hum.png");
-            bossi = new CanvasImage("../../../assets/evil.png");
             image.MaxWidth(15);
-            bossi.MaxWidth(15);
             music = new SoundPlayer("../../../assets/musci.wav");
             introm = new SoundPlayer("../../../assets/introm.wav");
             bossm = new SoundPlayer("../../../assets/bossm.wav");
@@ -324,11 +322,11 @@ namespace ClickBoxin
                 {
                     if (Game.Achievs[i].IsUnlocked)
                     {
-                        AnsiConsole.MarkupLine($"[bold green]{Game.Achievs[i].Name}[/]\n{Game.Achievs[i].Description} \t\t\t UNLOCKED[/]");
+                        AnsiConsole.MarkupLine($"[green]UNLOCKED {Game.Achievs[i].Name}[/]\n{Game.Achievs[i].Description}");
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine($"[red]{Game.Achievs[i].Name}[/]\n{Game.Achievs[i].Description} \t\t\t LOCKED[/]");
+                        AnsiConsole.MarkupLine($"[red]LOCKED {Game.Achievs[i].Name}[/]\n{Game.Achievs[i].Description}");
                     }
                 }
 
@@ -385,6 +383,7 @@ namespace ClickBoxin
                                 System.Threading.Thread.Sleep(50);
                             });
                         GamblingMachine.SpinWheelBasic();
+                        System.Threading.Thread.Sleep(5000);
                         Game.SaveGame();
                         break;
                     case "EPIC GAMBLE \t for 10 Tickets":
@@ -415,6 +414,7 @@ namespace ClickBoxin
                                 System.Threading.Thread.Sleep(50);
                             });
                         GamblingMachine.SpinWheelAdvanced();
+                        System.Threading.Thread.Sleep(5000);
                         Game.SaveGame();
                         break;
                 }
@@ -531,6 +531,28 @@ namespace ClickBoxin
         {
             Game.WindowOpened = 2;
             
+            var random = new Random();
+            int bossimage = random.Next(1, 5);
+            switch (bossimage)
+            {
+                case 1:
+                    bossi = new CanvasImage("../../../assets/boss1.png");
+                    break;
+                case 2:
+                    bossi = new CanvasImage("../../../assets/boss2.png");
+                    break;
+                case 3:
+                    bossi = new CanvasImage("../../../assets/boss3.png");
+                    break;
+                case 4:
+                    bossi = new CanvasImage("../../../assets/boss4.png");
+                    break;
+                case 5:
+                    bossi = new CanvasImage("../../../assets/boss5.png");
+                    break;
+            }
+            bossi.MaxWidth(15);
+            
             AnsiConsole.Clear();
             AnsiConsole.Write(BossWin);
             if(musicOn)
@@ -633,7 +655,7 @@ namespace ClickBoxin
             while(true)
             {
                 Game.player.Name = Console.ReadLine();
-                if (Game.player.Name.Length < 10&&Game.player.Name.Length>0)
+                if ((Game.player.Name.Length < 10&&Game.player.Name.Length>0)&&!(Game.player.Name.Contains("/")||Game.player.Name.Contains(",")||Game.player.Name.Contains(".")))
                 {
                     Directory.CreateDirectory("saves");
                     Game.SaveName(Game.player.Name);

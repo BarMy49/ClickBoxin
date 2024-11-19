@@ -334,8 +334,8 @@ public class Game
                 {
                     if (player.Ultra >= farm.TimeCost)
                     {
-                        player.Ultra -= farm.Cost;
-                        farm.TimeInterval -= 1; // Decrease the time interval
+                        player.Ultra -= farm.TimeCost;
+                        farm.TimeInterval --; // Decrease the time interval
                         farm.TimeCost += (farm.TimeCost/2); // Increase the cost by the half of the current cost
                         Achievs[7].Unlock();
                     }
