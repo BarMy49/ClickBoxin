@@ -1,4 +1,7 @@
 ﻿using System.Media;
+using System.Net;
+using System.Runtime.InteropServices;
+using Windows.Media.Capture;
 using Spectre.Console;
 using SixLabors.ImageSharp;
 using SCColor = Spectre.Console.Color;
@@ -7,6 +10,9 @@ namespace ClickBoxin
 {
     class Window
     {
+        [DllImport("user32.dll")]
+        public static extern int GetAsyncKeyState(Int32 vKey);
+        
         static public CanvasImage image;
         static public CanvasImage bossi;
         static public SoundPlayer music;
@@ -18,8 +24,9 @@ namespace ClickBoxin
         static public Table BossWin;
 
         static public string stats = "";
+        static public string menu = "";
         static public bool musicOn;
-        static public bool pressed = false;
+        static public bool SpacebarPressed = false;
 
         static public void GetAssets()
         {
@@ -45,26 +52,24 @@ namespace ClickBoxin
         }
         static public void UpdateStats()
         {
-            stats = $"STAGE: {Game.player.Stage}" +
+            stats = $"[bold]{Game.player.Name}[/]" + $"\nSTAGE: {Game.player.Stage}" +
                     $"\n[orange3]DMG: {Game.player.Dmg} X{Game.player.DmgMulti}[/]";
             for (int i = 0; i < Game.farms.Count; i++)
             {
                 var farm = Game.farms[i];
-                if(farm.ScoreIncrement > 0) stats += $"\n+ {farm.ScoreIncrement} score every {farm.TimeInterval} seconds \n{GenerateProgressBar(Game.time % farm.TimeInterval, farm.TimeInterval)}";
+                if(farm.ScorePP > 0) stats += $"\n+ {farm.ScorePP} score every {farm.TimeInterval} seconds \n{GenerateProgressBar(Game.time % farm.TimeInterval, farm.TimeInterval)}";
             }
         }
         static public void UpdateTable()
         {
+            menu = "[green]Press /Spacebar/ to attack!" + "\nPress /U/ to upgrade!" + "\nPress /Y/ to open ClickMenu";
+            if (Game.player.Stage > 2)
+            {
+                menu += "\nPress /R/ restart the game!";
+            }
+            menu += "\nPress /S/ to open settings!" + "\nPress /Backspace/ to exit the game![/]";
             GameWin.Rows.Clear();
-            GameWin.AddRow(new Markup($"{stats}"), image
-                , new Markup("[green]Press /Spacebar/ to attack! " +
-                                                                        "\nPress /U/ to upgrade! " +
-                                                                        "\nPress /S/ to save! " +
-                                                                        "\nPress /L/ to load! " +
-                                                                        "\nPress /M/ to mute! " +
-                                                                        "\nPress /I/ to ultra upgrade! " +
-                                                                        "\nPress /r/ to restart! " +
-                                                                        "\nPress /Backspace/ to exit![/]"));
+            GameWin.AddRow(new Markup($"{stats}"), image, new Markup(menu));
             GameWin.AddRow(new Markup(" "), new Markup($"score: {Game.player.Score}"), new Markup($"Press /B/ to FIGHT THE BOSS!\nCost: {Game.boss.Cost}"));
         }
         static public string GenerateProgressBar(int value, int interval)
@@ -72,7 +77,7 @@ namespace ClickBoxin
             int progress = Math.Min((value * 10) / interval, 10);
             return progress switch
             {
-                0 => "▭▱◁△□",
+                0 => "□□□□□□□□□□",
                 1 => "■□□□□□□□□□",
                 2 => "■■□□□□□□□□",
                 3 => "■■■□□□□□□□",
@@ -84,6 +89,181 @@ namespace ClickBoxin
                 9 => "■■■■■■■■■□",
                 _ => "□□□□□□□□□□"
             };
+        }
+        static public void SettingsMenu()
+        {
+            Game.WindowOpened = 5;
+            while (Game.WindowOpened == 5)
+            {
+                AnsiConsole.Clear();
+
+                AnsiConsole.MarkupLine($"[bold]SETTINGS MENU[/]");
+                AnsiConsole.MarkupLine($"[green]Settings for profile {Game.player.Name}[/]");
+                var choices = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .PageSize(10)
+                        .AddChoices("Exit", "Change Name", "Save Game", "Load Game", "Audio Off/On", "Reset All Progress"));
+
+                switch (choices)
+                {
+                    case "Exit":
+                        Game.WindowOpened = 0;
+                        break;
+                    case "Change Name":
+                        AnsiConsole.Clear();
+                        AnsiConsole.MarkupLine("[Green]Enter your new username:[/]");
+                        Game.player.Name = Console.ReadLine();
+                        Game.SaveName(Game.player.Name);
+                        Game.SaveGame();
+                        AnsiConsole.Clear();
+                        break;
+                    case "Save Game":
+                        Game.SaveGame();
+                        AnsiConsole.Status()
+                            .AutoRefresh(true)
+                            .Start("[green]Saving...[/]", ctx =>
+                            {   
+                                System.Threading.Thread.Sleep(1000);
+                                ctx.Spinner(Spinner.Known.Balloon2);
+                                ctx.SpinnerStyle(Style.Parse("green"));
+                                System.Threading.Thread.Sleep(1000);
+                            });
+                        break;
+                    case "Load Game":
+                        LoadMenu();
+                        break;
+                    case "Audio Off/On":
+                        if(musicOn)
+                        {
+                            music.Stop();
+                            musicOn = false;
+                        }
+                        else
+                        {
+                            music.PlayLooping();
+                            musicOn = true;
+                        }
+                        break;
+                    case "Reset All Progress":
+                        Game.ResetAllProgress();
+                        AnsiConsole.Clear();
+                        musicOn = false;
+                        InitialLogin();
+                        musicOn = true;
+                        break;
+                }
+
+                UpdateStats();
+                UpdateTable();
+            }
+        }
+        static public void LoadMenu()
+        {
+            Game.WindowOpened = 6;
+            while (Game.WindowOpened == 6)
+            {
+                AnsiConsole.Clear();
+
+                AnsiConsole.MarkupLine($"[bold]LOAD MENU[/]");
+                AnsiConsole.MarkupLine($"[green]Choose the profile to load[/]");
+                var choices = new List<string> {"Exit"};
+                if(File.Exists("saves/users.txt"))
+                {
+                    var Users = File.ReadAllText("saves/users.txt");
+                    string[] users = Users.Split(",");
+                    for(int i = 0;i<users.Count();i++)
+                    {
+                        choices.Add(users[i]);
+                    }
+                }
+                var profile = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .PageSize(10)
+                        .AddChoices(choices));
+
+                if (profile == "Exit")
+                {
+                    Game.WindowOpened = 0;
+                }
+                else
+                {
+                    AnsiConsole.Status()
+                        .AutoRefresh(true)
+                        .Start("[green]Loading...[/]", ctx =>
+                        {   
+                            System.Threading.Thread.Sleep(1000);
+                            ctx.Spinner(Spinner.Known.Balloon);
+                            ctx.SpinnerStyle(Style.Parse("green"));
+                            System.Threading.Thread.Sleep(1000);
+                        });
+                    Game.LoadGame(profile);
+                    Game.WindowOpened = 0;
+                }
+            }
+        }
+        static public void ClickMenu()
+        {
+            Game.WindowOpened = 7;
+            while (Game.WindowOpened == 7)
+            {
+                AnsiConsole.Clear();
+
+                AnsiConsole.MarkupLine($"[bold]CLICK MENU[/]");
+                var choices = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("Menu")
+                        .PageSize(10)
+                        .AddChoices("Exit", "Claim Daily Reward", "Ultra Upgrade", "Achievements", "Gamble Machine"));
+                switch (choices)
+                {
+                    case "Exit":
+                        Game.WindowOpened = 0;
+                        break;
+                    case "Claim Daily Reward":
+                        Game.ClaimReward();
+                        break;
+                    case "Ultra Upgrade":
+                        UltraUpgradeMenu();
+                        break;
+                    case "Achievements":
+                        AchievementsMenu();
+                        break;
+                    case "Gamble Machine":
+                        GambleMenu();
+                        break;
+                }
+
+                UpdateStats();
+                UpdateTable();
+            }
+        }
+        static public void AchievementsMenu()
+        {
+            Game.WindowOpened = 8;
+            while (Game.WindowOpened == 8)
+            {
+                AnsiConsole.Clear();
+
+                AnsiConsole.MarkupLine($"[bold]ACHIEVEMENTS MENU[/]");
+                
+
+                UpdateStats();
+                UpdateTable();
+            }
+        }
+        static public void GambleMenu()
+        {
+            Game.WindowOpened = 9;
+            while (Game.WindowOpened == 9)
+            {
+                AnsiConsole.Clear();
+
+                AnsiConsole.MarkupLine($"[bold]LET'S GO GAMBLING![/]");
+                
+
+                UpdateStats();
+                UpdateTable();
+            }
         }
         static public void UpgradeMenu()
         {
@@ -98,7 +278,7 @@ namespace ClickBoxin
                 for (int i = 0; i < Game.farms.Count; i++)
                 {
                     var farm = Game.farms[i];
-                    choices.Add($"FARM ({farm.ScoreIncrement+5} score every {farm.TimeInterval} seconds)");
+                    choices.Add($"FARM ({farm.ScorePP+5} score every {farm.TimeInterval} seconds)");
                 }
                 var upgrade = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -288,6 +468,25 @@ namespace ClickBoxin
                 });
             AnsiConsole.Clear();
         }
+        static public void InitialLogin()
+        {
+            AnsiConsole.MarkupLine("[green]Start your adventure.[/]");
+            AnsiConsole.MarkupLine("[bold]Enter your username:[/]");
+            while(true)
+            {
+                Game.player.Name = Console.ReadLine();
+                if (Game.player.Name.Length < 10&&Game.player.Name.Length>0)
+                {
+                    Directory.CreateDirectory("saves");
+                    Game.SaveName(Game.player.Name);
+                    break;
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[red]Username incorrect or is too long![/]");
+                }
+            }
+        }
 
         static public void UltraRestartLoad()
         {
@@ -328,6 +527,18 @@ namespace ClickBoxin
             GetAssets();
             CreateTable();
             CreateBossTable();
+            if (!File.Exists("saves/users.txt"))
+            {
+                InitialLogin();
+            }
+            else
+            {
+                LoadMenu();
+                if(Game.player.Name == "")
+                {
+                    InitialLogin();
+                }
+            }
             Game.CreateBoss(Game.player.Stage,Game.bosstime);
             
             Intro();
@@ -349,7 +560,7 @@ namespace ClickBoxin
                             Game.esc = false;
                             break;
                         case ConsoleKey.Spacebar:
-                            Game.player.Score += (Game.player.Dmg*Game.player.DmgMulti);
+                            SpacebarPressed = true;
                             break;
                         case ConsoleKey.U:
                             UpgradeMenu();
@@ -395,34 +606,24 @@ namespace ClickBoxin
                             break;
                         }
                         case ConsoleKey.S:
-                            AnsiConsole.Status()
-                                .AutoRefresh(true)
-                                .Start("[green]Saving...[/]", ctx =>
-                                {   
-                                    System.Threading.Thread.Sleep(1000);
-                                    ctx.Spinner(Spinner.Known.Balloon2);
-                                    ctx.SpinnerStyle(Style.Parse("green"));
-                                    System.Threading.Thread.Sleep(1000);
-                            });
-                            Game.SaveGame();
+                            SettingsMenu();
                             break;
-                        case ConsoleKey.L:
-                            AnsiConsole.Status()
-                                .AutoRefresh(true)
-                                .Start("[green]Loading...[/]", ctx =>
-                                {   
-                                    System.Threading.Thread.Sleep(1000);
-                                    ctx.Spinner(Spinner.Known.Balloon);
-                                    ctx.SpinnerStyle(Style.Parse("green"));
-                                    System.Threading.Thread.Sleep(1000);
-                                });
-                            Game.LoadGame();
+                        case ConsoleKey.Y:
+                            ClickMenu();
                             break;
                     }
                     UpdateTable();
                     UpdateStats();
                     AnsiConsole.Clear();
                     AnsiConsole.Write(GameWin);
+                }
+                else
+                {
+                    if (SpacebarPressed == true)
+                    {
+                        Game.player.Score += (Game.player.Dmg*Game.player.DmgMulti);
+                        SpacebarPressed = false;
+                    }
                 }
             }
             outrom.Play();
