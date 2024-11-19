@@ -4,6 +4,7 @@
 - Dodać Restart DONE
 - Podzielić na classy (Game Engine, View Port) DONE
 - Dodać Ultra Upgrady DONE
+- Potężny Rework DONE
 - Dodać Achivementy
 - Dodać więcej obrazków
 - Dodać gambling machine
